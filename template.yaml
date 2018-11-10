@@ -253,7 +253,7 @@ Resources:
         - !Ref PrivateSubnet5
         - !Ref PrivateSubnet6
       RouteTableId: !Ref PrivateRouteTable
-
+      
   PrivateNetworkAcl:
     Type: AWS::EC2::NetworkAcl
     Properties:
@@ -296,7 +296,7 @@ Resources:
         - !Ref PrivateSubnet5
         - !Ref PrivateSubnet6
       NetworkAclId: !Ref PublicNetworkAcl
-         
+      
   PublicElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
@@ -335,10 +335,7 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AvailabilityZones:
-        Fn::GetAtt:
-          - PrivateSubnet1
-          - PrivateSubnet2
-          - AvailabilityZone
+        Fn::GetAZs: ""
       VPCZoneIdentifier: 
         - !Ref PrivateSubnet1
         - !Ref PrivateSubnet2
@@ -350,18 +347,18 @@ Resources:
       Tags:
         Key: Network
         Value: Public
-        PropagateAtLaunch: true		
+        PropagateAtLaunch: true
 
   WebTierLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       ImageId: 
-        Fn::FindInMap
-          - AWSRegionArch2AMI
+        Fn::FindInMap:
+          - "AWSRegionArch2AMI"
           - !Ref "AWS::Region"
           - Fn::FindInMap:
               - "AWSInstanceType2Arch"
-              - !Ref WebInstanceType
+              - !Ref "WebInstanceType"
               - "Arch"
         UserData:
           Fn::Base64: "80"
@@ -376,7 +373,7 @@ Resources:
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: "80"
-          ToPort" : "80"
+          ToPort: "80"
           SourceSecurityGroupId: !Ref WebLoadBalancerSecurityGroup
           
   PrivateElasticLoadBalancer:
@@ -417,10 +414,7 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AvailabilityZones:
-        Fn::GetAtt:
-          - PrivateSubnet3
-          - PrivateSubnet4
-          - AvailabilityZone
+        Fn::GetAZs: ""
       VPCZoneIdentifier: 
         - !Ref PrivateSubnet3
         - !Ref PrivateSubnet4
@@ -432,18 +426,18 @@ Resources:
       Tags:
         Key: Network
         Value: Public
-        PropagateAtLaunch: true		
+        PropagateAtLaunch: true
 
   AppTierLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       ImageId: 
-        Fn::FindInMap
-          - AWSRegionArch2AMI
+        Fn::FindInMap:
+          - "AWSRegionArch2AMI"
           - !Ref "AWS::Region"
           - Fn::FindInMap:
               - "AWSInstanceType2Arch"
-              - !Ref AppInstanceType
+              - !Ref "AppInstanceType"
               - "Arch"
         UserData:
           Fn::Base64: "80"
@@ -458,7 +452,7 @@ Resources:
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: "80"
-          ToPort" : "80"
+          ToPort: "80"
           SourceSecurityGroupId: !Ref AppLoadBalancerSecurityGroup
 
 Outputs:
