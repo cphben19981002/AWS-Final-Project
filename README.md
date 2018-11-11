@@ -3,7 +3,8 @@
 ## IAM Setup ##
 
 go to IAM > Users > awsstudent 
-in the Permissions setting add new permissions policies call AdministratorAccess 
+
+In the Permissions setting add new permissions policies call AdministratorAccess 
 
 Then delete other permissions without AdministratorAccess
 
