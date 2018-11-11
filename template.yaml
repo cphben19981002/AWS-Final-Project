@@ -2,6 +2,16 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Deploy final project
 
 Parameters:
+  AvailabilityZoneA: 
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: !Select
+      - '0'
+      - !GetAZs ''
+  AvailabilityZoneB: 
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: !Select
+      - '1'
+      - !GetAZs ''
   WebInstanceType:
     Type: String
     Default: t2.large
@@ -12,20 +22,20 @@ Parameters:
     Description: Default Application Tier is r3.2xlarge.
   InstanceCount:
     Type: Number
-    Default: 6
+    Default: 5
     Description: Number of EC2 instances to launch
 
 Mappings:
   AWSInstanceType2Arch:
-    t2.large:
-      Arch: "64"
-    r3.2xlarge:
-      Arch: "64"
+    "t2.large":
+      "Arch": "64"
+    "r3.2xlarge":
+      "Arch": "64"
   AWSRegionArch2AMI:
-    us-west-1:
+    "us-west-1":
       "64" : "ami-b18ed2f4"
-    us-east-1:
-      "64" : "ami-81a768e8"
+    "us-east-1":
+      "64" : "ami-e965ba80"
 
 Resources:
   VPC:
@@ -89,14 +99,18 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
-  PublicSubnetRouteTableAssociation:
+  PublicSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: 
-        - !Ref PublicSubnet1
-        - !Ref PublicSubnet2
-      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref "PublicSubnet1"
+      RouteTableId: !Ref "PublicRouteTable"
 
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PublicSubnet2"
+      RouteTableId: !Ref "PublicRouteTable"
+      
   PublicNetworkAcl:
     Type: AWS::EC2::NetworkAcl
     Properties:
@@ -131,7 +145,7 @@ Resources:
   OutBoundHTTPPublicNetworkAclEntry:
     Type: AWS::EC2::NetworkAclEntry
     Properties:
-      NetworkAclId: !Ref PublicNetworkAcl
+      NetworkAclId: !Ref "PublicNetworkAcl"
       RuleNumber: '100'
       Protocol: "6"
       RuleAction: allow
@@ -154,13 +168,17 @@ Resources:
         From: "1024" 
         To: "65535"
           
-  PublicSubnetNetworkAclAssociation:
+  PublicSubnet1NetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
-      SubnetId:
-        - !Ref PublicSubnet1
-        - !Ref PublicSubnet2
-      NetworkAclId: !Ref PublicNetworkAcl
+      SubnetId: !Ref "PublicSubnet1"
+      NetworkAclId: !Ref "PublicNetworkAcl"
+      
+  PublicSubnet2NetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref "PublicSubnet2"
+      NetworkAclId: !Ref "PublicNetworkAcl"
           
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
@@ -242,18 +260,42 @@ Resources:
       - Key: Name
         Value: Private Route Table
 
-  PrivateSubnetRouteTableAssociation:
+  PrivateSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: 
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2 
-        - !Ref PrivateSubnet3
-        - !Ref PrivateSubnet4 
-        - !Ref PrivateSubnet5
-        - !Ref PrivateSubnet6
-      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref "PrivateSubnet1"
+      RouteTableId: !Ref "PrivateRouteTable"
       
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet2"
+      RouteTableId: !Ref "PrivateRouteTable"
+  
+  PrivateSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet3"
+      RouteTableId: !Ref "PrivateRouteTable"
+
+  PrivateSubnet4RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet4"
+      RouteTableId: !Ref "PrivateRouteTable"
+      
+  PrivateSubnet5RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet5"
+      RouteTableId: !Ref "PrivateRouteTable"
+  
+  PrivateSubnet6RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet6"
+      RouteTableId: !Ref "PrivateRouteTable"
+  
   PrivateNetworkAcl:
     Type: AWS::EC2::NetworkAcl
     Properties:
@@ -285,22 +327,47 @@ Resources:
         From: "0" 
         To: "65535"      
 
-  PrivateSubnetNetworkAclAssociation:
+  PrivateSubnet1NetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
-      SubnetId:  
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2 
-        - !Ref PrivateSubnet3
-        - !Ref PrivateSubnet4 
-        - !Ref PrivateSubnet5
-        - !Ref PrivateSubnet6
-      NetworkAclId: !Ref PublicNetworkAcl
+      SubnetId: !Ref "PrivateSubnet1"
+      NetworkAclId: !Ref "PublicNetworkAcl"
       
+  PrivateSubnet2NetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet2"
+      NetworkAclId: !Ref "PublicNetworkAcl"
+      
+  PrivateSubnet3NetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet3"
+      NetworkAclId: !Ref "PublicNetworkAcl"
+
+  PrivateSubnet4NetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet4"
+      NetworkAclId: !Ref "PublicNetworkAcl"
+      
+  PrivateSubnet5NetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet5"
+      NetworkAclId: !Ref "PublicNetworkAcl"
+      
+  PrivateSubnet6NetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref "PrivateSubnet6"
+      NetworkAclId: !Ref "PublicNetworkAcl"
+  
   PublicElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
-      SecurityGroups: !Ref WebLoadBalancerSecurityGroup
+      SecurityGroups: 
+        - !Ref WebLoadBalancerSecurityGroup
       Subnets: 
         - !Ref PublicSubnet1
         - !Ref PublicSubnet2
@@ -335,19 +402,21 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AvailabilityZones:
-        Fn::GetAZs: ""
+        - !Ref AvailabilityZoneA
+        - !Ref AvailabilityZoneB
       VPCZoneIdentifier: 
         - !Ref PrivateSubnet1
         - !Ref PrivateSubnet2
-      LaunchConfigurationName: !Ref WebTierLaunchConfig
-      MinSize: "6"
+      LaunchConfigurationName: !Ref "WebTierLaunchConfig"
+      MinSize: "4"
       MaxSize: "12"
       DesiredCapacity: !Ref InstanceCount
-      LoadBalancerNames: !Ref PublicElasticLoadBalancer
+      LoadBalancerNames: 
+        - !Ref PublicElasticLoadBalancer
       Tags:
-        Key: Network
-        Value: Public
-        PropagateAtLaunch: true
+        - Key: Name
+          Value: web-tier
+          PropagateAtLaunch: true
 
   WebTierLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -355,15 +424,16 @@ Resources:
       ImageId: 
         Fn::FindInMap:
           - "AWSRegionArch2AMI"
-          - !Ref "AWS::Region"
+          - Ref: "AWS::Region"
           - Fn::FindInMap:
               - "AWSInstanceType2Arch"
-              - !Ref "WebInstanceType"
+              - Ref: "WebInstanceType"
               - "Arch"
-        UserData:
-          Fn::Base64: "80"
-        SecurityGroups: !Ref WebInstanceSecurityGroup
-        InstanceType: !Ref WebInstanceType
+      UserData:
+        Fn::Base64: "80"
+      SecurityGroups: 
+        - !Ref "WebInstanceSecurityGroup"
+      InstanceType: !Ref "WebInstanceType"
 
   WebInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -379,7 +449,8 @@ Resources:
   PrivateElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
-      SecurityGroups: !Ref AppLoadBalancerSecurityGroup
+      SecurityGroups: 
+        - !Ref AppLoadBalancerSecurityGroup
       Subnets: 
         - !Ref PrivateSubnet1
         - !Ref PrivateSubnet2
@@ -414,19 +485,21 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AvailabilityZones:
-        Fn::GetAZs: ""
+        - !Ref AvailabilityZoneA
+        - !Ref AvailabilityZoneB
       VPCZoneIdentifier: 
         - !Ref PrivateSubnet3
         - !Ref PrivateSubnet4
-      LaunchConfigurationName: !Ref AppTierLaunchConfig
-      MinSize: "6"
-      MaxSize: "12"
+      LaunchConfigurationName:  !Ref "AppTierLaunchConfig"
+      MinSize: "5"
+      MaxSize: "5"
       DesiredCapacity: !Ref InstanceCount
-      LoadBalancerNames: !Ref PrivateElasticLoadBalancer
+      LoadBalancerNames: 
+        - !Ref "PrivateElasticLoadBalancer"
       Tags:
-        Key: Network
-        Value: Public
-        PropagateAtLaunch: true
+        - Key: Name
+          Value: app-tier
+          PropagateAtLaunch: true
 
   AppTierLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -434,15 +507,16 @@ Resources:
       ImageId: 
         Fn::FindInMap:
           - "AWSRegionArch2AMI"
-          - !Ref "AWS::Region"
+          - Ref: "AWS::Region"
           - Fn::FindInMap:
               - "AWSInstanceType2Arch"
-              - !Ref "AppInstanceType"
+              - Ref: "AppInstanceType"
               - "Arch"
-        UserData:
-          Fn::Base64: "80"
-        SecurityGroups: !Ref AppInstanceSecurityGroup
-        InstanceType: !Ref AppInstanceType
+      UserData:
+        Fn::Base64: "80"
+      SecurityGroups: 
+        - !Ref "AppInstanceSecurityGroup"
+      InstanceType: !Ref "AppInstanceType"
 
   AppInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
