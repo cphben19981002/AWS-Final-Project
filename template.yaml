@@ -4,14 +4,10 @@ Description: Deploy final project
 Parameters:
   AvailabilityZoneA: 
     Type: AWS::EC2::AvailabilityZone::Name
-    Default: !Select
-      - '0'
-      - !GetAZs ''
+    Default: "us-east-1a"
   AvailabilityZoneB: 
     Type: AWS::EC2::AvailabilityZone::Name
-    Default: !Select
-      - '1'
-      - !GetAZs ''
+    Default: "us-east-1b"
   WebInstanceType:
     Type: String
     Default: t2.large
