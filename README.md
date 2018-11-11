@@ -23,7 +23,7 @@ then use the
 . ./set_config.sh  
 command to set the config, not forget the first "."
 
-next edit the bucket name in deployment.sh line 4  
+next edit the bucket name in deployment.sh line 3  
 (sourcebucket=my$STACK_NAME) edit my to your name or id  
 after that you can run  
 ./deployment.sh  
