@@ -525,6 +525,56 @@ Resources:
           ToPort: "80"
           SourceSecurityGroupId: !Ref AppLoadBalancerSecurityGroup
 
+  AppServerScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: "PercentChangeInCapacity"
+      AutoScalingGroupName: !Ref "AppServerGroup"
+      Cooldown: "300"
+      ScalingAdjustment: 100
+    
+  AppServerScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties: 
+      AdjustmentType: "ChangeInCapacity"
+      AutoScalingGroupName: !Ref "AppServerGroup"
+      Cooldown: "600"
+      ScalingAdjustment: -1
+
+  CPUAlarmHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmDescription: "Scale-up if CPU > 60% for 10 minutes"
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: "120"
+      EvaluationPeriods: "5"
+      Threshold: "40"
+      AlarmActions: 
+        - !Ref "AppServerScaleUpPolicy"
+      Dimensions:
+        - Name: "AutoScalingGroupName"
+          Value: !Ref "AppServerGroup" 
+      ComparisonOperator: "GreaterThanThreshold"
+
+  CPUAlarmLow:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmDescription: "Scale-down if CPU < 50% for 60 min"
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: "120"
+      EvaluationPeriods: "30"
+      Threshold: "20"
+      AlarmActions: 
+        - !Ref "AppServerScaleDownPolicy"
+      Dimensions:
+        - Name: "AutoScalingGroupName"
+          Value: !Ref "AppServerGroup"
+      ComparisonOperator: "LessThanThreshold"         
+          
 Outputs:
   VPC:
     Description: VPC
