@@ -20,6 +20,108 @@ Parameters:
     Type: Number
     Default: 5
     Description: Number of EC2 instances to launch
+  Owner:
+    Description: Enter Team or Individual Name Responsible for the Stack.
+    Type: String
+    Default: FirstName LastName
+  Project:
+    Type: String
+    Default: MySQL RDS Creation
+  DeleteAfter:
+    Description: Enter Date It's Ok to Delete the Stack or 'Never' if meant to be persistent.
+    Type: String
+    Default: 00/00/201x
+  TcpPort:
+    Description: Enter RDS Listening TCP Port number.
+    Type: Number
+    Default: 3306
+    
+  ConfigureDns:
+    Description: Configure Route 53 DNS Alias for RDS? Be sure a matching record doesn't already exist.
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
+  Cname:
+    Description: "(Skip if Not Configuring Route 53) DNS Record to Update for the RDS Instance."
+    Type: String
+    Default: db.domain.com
+  R53HostedZoneName:
+    Description: "(Skip if Not Configuring Route 53) Hosted DNS Name."
+    Type: String
+    Default: domain.com
+
+  BackupRetentionPeriod:
+    Description: Enter Backup Retention Period in Days.
+    Type: Number
+    Default: 7
+  PreferredBackupWindow:
+    Description: Enter Preferred Backup Window Time (UTC).
+    Type: String
+    Default: 17:00-19:00
+  PreferredMaintenanceWindow:
+    Description: Enter Preferred Maintenance Window Time (UTC).
+    Type: String
+    Default: Sun:19:00-Sun:23:00
+
+  ConfigureProvisionedIops:
+    Description: Configure Route 53 DNS Alias for RDS? Be sure a matching record doesn't already exist.
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
+  SnapshotOnDelete:
+    Description: Create a Snapshot on Delete?
+    Type: String
+    Default: 'true'
+    AllowedValues:
+    - 'true'
+    - 'false'
+  ProvisionedIopsValue:
+    Description: "(Skip if Not Using Provisioned IOPS) Set Provisioned IOPS 1000-30000."
+    Type: Number
+    Default: 1000
+    MinValue: 1000
+    MaxValue: 30000
+
+  AutoMinorVersionUpgrade:
+    Description: Allow Automatic Minor Version Upgrades?
+    Type: String
+    Default: 'true'
+    AllowedValues:
+    - 'true'
+    - 'false'
+
+  InstanceType:
+    Type: String
+    Default: db.t2.large
+  
+  MultiAvailabilityZone:
+    Description: Enable Multi Availability Zones?
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
+
+  AlertSnsTopicArn:
+    Description: Enter Alert Notification SNS Topic ARN for RDS.
+    Type: String
+    Default: arn:aws:sns:us-west-2:000000000000:rds-alerts
+  SetupAlarms:
+    Description: Setup Cloudwatch Alarms?
+    Type: String
+    Default: 'true'
+    AllowedValues:
+    - 'true'
+    - 'false'
+
+Conditions:
+  ConfigureRoute53: !Equals [ !Ref ConfigureDns, 'true' ]
+  ConfigureAlarms: !Equals [ !Ref SetupAlarms, 'true' ]
+  ConfigureSnapshotOnDelete: !Equals [ !Ref SnapshotOnDelete, 'true' ]    
 
 Mappings:
   AWSInstanceType2Arch:
@@ -61,9 +163,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.0.0/24
-      AvailabilityZone: !Select
-        - '0'
-        - !GetAZs ''
+      AvailabilityZone: !Ref "AvailabilityZoneA"
       Tags:
         - Key: Name
           Value: Public Subnet 1
@@ -73,9 +173,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.1.0/24
-      AvailabilityZone: !Select
-        - '1'
-        - !GetAZs ''
+      AvailabilityZone: !Ref "AvailabilityZoneB"
       Tags:
         - Key: Name
           Value: Public Subnet 2 
@@ -181,9 +279,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.2.0/24
-      AvailabilityZone: !Select 
-        - '0'
-        - !GetAZs ''
+      AvailabilityZone: !Ref "AvailabilityZoneA"
       Tags:
         - Key: Name
           Value: Private Subnet 1
@@ -193,9 +289,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.3.0/24
-      AvailabilityZone: !Select 
-        - '1'
-        - !GetAZs ''
+      AvailabilityZone: !Ref "AvailabilityZoneB"
       Tags:
         - Key: Name
           Value: Private Subnet 2 
@@ -205,9 +299,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.4.0/24
-      AvailabilityZone: !Select 
-        - '0'
-        - !GetAZs ''
+      AvailabilityZone: !Ref "AvailabilityZoneA"
       Tags:
         - Key: Name
           Value: Private Subnet 3 
@@ -217,9 +309,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.5.0/24
-      AvailabilityZone: !Select 
-        - '1'
-        - !GetAZs ''
+      AvailabilityZone: !Ref "AvailabilityZoneB"
       Tags:
         - Key: Name
           Value: Private Subnet 4
@@ -229,9 +319,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.6.0/24
-      AvailabilityZone: !Select 
-        - '0'
-        - !GetAZs ''
+      AvailabilityZone: !Ref "AvailabilityZoneA"
       Tags:
         - Key: Name
           Value: Private Subnet 5 
@@ -241,9 +329,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       CidrBlock: 10.0.7.0/24
-      AvailabilityZone: !Select 
-        - '1'
-        - !GetAZs ''
+      AvailabilityZone: !Ref "AvailabilityZoneB"
       Tags:
         - Key: Name
           Value: Private Subnet 6 
@@ -441,6 +527,56 @@ Resources:
           FromPort: "80"
           ToPort: "80"
           SourceSecurityGroupId: !Ref WebLoadBalancerSecurityGroup
+
+  WebServerScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: "PercentChangeInCapacity"
+      AutoScalingGroupName: !Ref "WebServerGroup"
+      Cooldown: "300"
+      ScalingAdjustment: 100
+    
+  WebServerScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties: 
+      AdjustmentType: "ChangeInCapacity"
+      AutoScalingGroupName: !Ref "WebServerGroup"
+      Cooldown: "600"
+      ScalingAdjustment: -1
+
+  WebCPUAlarmHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmDescription: "Scale-up if CPU > 60% for 10 minutes"
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: "120"
+      EvaluationPeriods: "5"
+      Threshold: "40"
+      AlarmActions: 
+        - !Ref "WebServerScaleUpPolicy"
+      Dimensions:
+        - Name: "AutoScalingGroupName"
+          Value: !Ref "WebServerGroup" 
+      ComparisonOperator: "GreaterThanThreshold"
+
+  WebCPUAlarmLow:
+    Type: AWS::CloudWatch::Alarm
+    Properties: 
+      AlarmDescription: "Scale-down if CPU < 50% for 60 min"
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: "120"
+      EvaluationPeriods: "30"
+      Threshold: "20"
+      AlarmActions: 
+        - !Ref "WebServerScaleDownPolicy"
+      Dimensions:
+        - Name: "AutoScalingGroupName"
+          Value: !Ref "WebServerGroup"
+      ComparisonOperator: "LessThanThreshold"  
           
   PrivateElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
@@ -488,7 +624,7 @@ Resources:
         - !Ref PrivateSubnet4
       LaunchConfigurationName:  !Ref "AppTierLaunchConfig"
       MinSize: "5"
-      MaxSize: "5"
+      MaxSize: "20"
       DesiredCapacity: !Ref InstanceCount
       LoadBalancerNames: 
         - !Ref "PrivateElasticLoadBalancer"
@@ -541,7 +677,7 @@ Resources:
       Cooldown: "600"
       ScalingAdjustment: -1
 
-  CPUAlarmHigh:
+  AppCPUAlarmHigh:
     Type: AWS::CloudWatch::Alarm
     Properties: 
       AlarmDescription: "Scale-up if CPU > 60% for 10 minutes"
@@ -558,7 +694,7 @@ Resources:
           Value: !Ref "AppServerGroup" 
       ComparisonOperator: "GreaterThanThreshold"
 
-  CPUAlarmLow:
+  AppCPUAlarmLow:
     Type: AWS::CloudWatch::Alarm
     Properties: 
       AlarmDescription: "Scale-down if CPU < 50% for 60 min"
@@ -574,6 +710,99 @@ Resources:
         - Name: "AutoScalingGroupName"
           Value: !Ref "AppServerGroup"
       ComparisonOperator: "LessThanThreshold"         
+      
+  RDSAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Instance to RDS Access
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Ref "AWS::StackName"
+      - Key: Owner
+        Value: !Ref Owner
+      - Key: Project
+        Value: !Ref Project
+      - Key: DeleteAfter
+        Value: !Ref DeleteAfter
+
+  AccessSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    DependsOn: RDSAccessSecurityGroup
+    Properties:
+      GroupId: !Ref RDSAccessSecurityGroup
+      IpProtocol: tcp
+      FromPort: !Ref TcpPort
+      ToPort: !Ref TcpPort
+      SourceSecurityGroupId: !Ref RDSAccessSecurityGroup
+      
+  DbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Join [ "", [ "RDS Subnet Group for ", !Ref "AWS::StackName" ] ]
+      SubnetIds: 
+        - !Ref PrivateSubnet5
+        - !Ref PrivateSubnet6
+      Tags:
+      - Key: Name
+        Value: !Ref "AWS::StackName"
+      - Key: Owner
+        Value: !Ref Owner
+      - Key: Project
+        Value: !Ref Project
+      - Key: DeleteAfter
+        Value: !Ref DeleteAfter
+        
+  DbInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    DependsOn:
+    - DbSubnetGroup
+    - RDSAccessSecurityGroup 
+    Properties:
+      AllocatedStorage: "2100"
+      Iops: "21000"
+      Engine: "MySQL"
+      EngineVersion: "5.6"
+      MasterUsername: "DBUser"
+      MasterUserPassword: "DBPassword"
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: !Ref AutoMinorVersionUpgrade
+      BackupRetentionPeriod: !Ref BackupRetentionPeriod
+      DBInstanceClass: !Ref InstanceType
+      DBInstanceIdentifier: !Ref AWS::StackName
+      DBSubnetGroupName: !Ref DbSubnetGroup
+      MultiAZ: !Ref MultiAvailabilityZone
+      Port: !Ref TcpPort
+      PreferredBackupWindow: !Ref PreferredBackupWindow
+      PreferredMaintenanceWindow: !Ref PreferredMaintenanceWindow
+      PubliclyAccessible: false
+      StorageEncrypted: false
+      VPCSecurityGroups:
+      - !Ref RDSAccessSecurityGroup
+      Tags:
+      - Key: Name
+        Value: !Ref "AWS::StackName"
+      - Key: Owner
+        Value: !Ref Owner
+      - Key: Project
+        Value: !Ref Project
+      - Key: DeleteAfter
+        Value: !Ref DeleteAfter
+      
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicReadWrite
+      LifecycleConfiguration:
+        Rules:
+        - Id: GlacierRule
+          Prefix: glacier
+          Status: Enabled
+          ExpirationInDays: '365'
+          Transitions:
+            - TransitionInDays: '1'
+              StorageClass: Glacier
           
 Outputs:
   VPC:
