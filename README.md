@@ -1,5 +1,13 @@
 # labmonitor_collector
 
+## IAM Setup ##
+
+go to IAM > Users > awsstudent 
+in the Permissions setting add new permissions policies call AdministratorAccess 
+
+Then delete other permissions without AdministratorAccess
+
+
 ## Cloud 9 Setup ##
 
 git clone https://github.com/HIN0815/AWS-Final-Project.git  
