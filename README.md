@@ -19,9 +19,12 @@ chmod +x *.sh
 after that you may need to run  
 source venv/bin/activate  
 
-then use the (. ./set_config.sh) command to set the config,
-not forget the first "."
+then use the  
+. ./set_config.sh  
+command to set the config, not forget the first "."
 
-after that you can run
-(./deployment.sh)
+next edit the bucket name in deployment.sh line 4  
+(sourcebucket=my$STACK_NAME) edit my to your name or id  
+after that you can run  
+./deployment.sh  
 to deployment the final project
