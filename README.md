@@ -16,7 +16,7 @@ cd AWS-Final-Project/
 chmod +x *.sh  
 ./setup.sh  
 
-after that you may need to run  
+after that you need to run  
 source venv/bin/activate  
 
 then use the  
