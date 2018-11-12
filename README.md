@@ -24,7 +24,7 @@ then use the
 command to set the config, not forget the first "."
 
 next edit the bucket name in deployment.sh line 3  
-(sourcebucket=my$STACK_NAME) edit my to your name or id  
+(sourcebucket=my$STACK_NAME) edit my to your name or id, such as Ben$STACK_NAME  
 after that you can run  
 ./deployment.sh  
 to deployment the final project
